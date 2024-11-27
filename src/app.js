@@ -1,40 +1,36 @@
 const express = require("express");
-const connectDB=require("./config/database");
+const connectDB = require("./config/database");
 const app = express();
-const User=require("./models/user")
+const User = require("./models/user");
 
-
-
-
-
-
-app.post("/signup",async(req,res)=>{
-  const userObj={
-    firstName:"Akshay",
-    lastName:"Saini",
-    emailId:"akshay@saini.com",
-    password:"akshay@123  "
+app.use(express.json());
+app.post("/signup", async (req, res) => {
+  // console.log(req.body);
+  // const userObj = {
+  //   firstName: "Akshay",
+  //   lastName: "Saini",
+  //   emailId: "akshay@saini.com",
+  //   password: "akshay@123  ",
+  // };
+  const user = new User(req.body);
+  // //saves data to the datadase and returns a promise
+  try {
+    await user.save();
+    res.send("User added Successfully");
+  } catch (err) {
+    res.status(400).send("Error Saving the user" + err.message);
   }
-  const user=new User(userObj);
-  //saves data to the datadase and returns a promise
-  await user.save();
-  res.send("User added Successfully")
-})
-connectDB().then(()=>{
-  console.log("Database connection establihed");
-  app.listen(3000, () => {
-    console.log("server us ;istenong");
+});
+connectDB()
+  .then(() => {
+    console.log("Database connection establihed");
+    app.listen(3000, () => {
+      console.log("server is Listening");
+    });
+  })
+  .catch((err) => {
+    console.log("Database connection error");
   });
-  
-}).catch(err=>{
-  console.log("Database connection error")
-})
-
-
-
-
-
-
 
 // app.get("/user",(req,res)=>{
 //     res.send({firstName:"Mouryaa",lastName:"Devi"})
