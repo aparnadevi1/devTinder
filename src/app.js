@@ -22,58 +22,59 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/user",async(req,res)=>{
- const userEmail= req.body.emailId;
- try{
-  const users=await User.find({emailId:userEmail});
-  if(users.length===0)
-  {
-    res.status(404).send("User not found");
-  }
-  else{
-    res.send(users);
-  }
-  
-}
-  catch(err)
-  {
-    res.status(400).send("Something went wrong");
-  }
-
-})
-app.get("/feed",async(req,res)=>{
-  try{
-    const users=await User.find({});
-    if(users.length===0)
-    {
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.emailId;
+  try {
+    const users = await User.find({ emailId: userEmail });
+    if (users.length === 0) {
       res.status(404).send("User not found");
-    }
-    else{
+    } else {
       res.send(users);
     }
-    
+  } catch (err) {
+    res.status(400).send("Something went wrong");
   }
-    catch(err)
-    {
-      res.status(400).send("Something went wrong");
+});
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find({});
+    if (users.length === 0) {
+      res.status(404).send("User not found");
+    } else {
+      res.send(users);
     }
+  } catch (err) {
+    res.status(400).send("Something went wrong");
+  }
 });
 
-app.patch("/user",async(req,res)=>{
-  const userId= req.body.userId;
-  const data=req.body;
-  try{
-   const users=await User.findByIdAndUpdate({_id:userId},data,{
-    returnDocument:"after",
-    runValidators:true,
-   });
-   
-     res.send("User Updated successfully");
-  }catch(err){
-     res.status(400).send("something went wrong"+err.message);
-   }
- 
- });
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
+  const data = req.body;
+  try {
+    const ALLOWED_UPDATES = ["photoUrl", "about", "age",
+      "skills"
+    ];
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+    if (!isUpdateAllowed) {
+      throw new Error("Update not allowed");
+    }
+    if(data?.skills.length>10)
+    {
+      throw new Error("Skills can not be greater than 10  ");
+    }
+    const users = await User.findByIdAndUpdate({ _id: userId }, data, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+
+    res.send("User Updated successfully");
+  } catch (err) {
+    res.status(400).send("something went wrong" + err.message);
+  }
+});
 
 connectDB()
   .then(() => {
