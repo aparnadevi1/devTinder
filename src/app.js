@@ -2,7 +2,8 @@ const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
-
+const bcrypt = require("bcrypt");
+const { validateSignUpData } = require("./utils/validation");
 app.use(express.json());
 app.post("/signup", async (req, res) => {
   // console.log(req.body);
@@ -12,9 +13,23 @@ app.post("/signup", async (req, res) => {
   //   emailId: "akshay@saini.com",
   //   password: "akshay@123  ",
   // };
-  const user = new User(req.body);
+
   // //saves data to the datadase and returns a promise
   try {
+    //validates the data
+    validateSignUpData(req);
+
+    //Encrypting the password
+    //npm package bcrypt
+    const { firstName, lastName, emailId, password } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+    });
+
     await user.save();
     res.send("User added Successfully");
   } catch (err) {
@@ -35,6 +50,7 @@ app.get("/user", async (req, res) => {
     res.status(400).send("Something went wrong");
   }
 });
+
 app.get("/feed", async (req, res) => {
   try {
     const users = await User.find({});
@@ -52,17 +68,14 @@ app.patch("/user/:userId", async (req, res) => {
   const userId = req.params?.userId;
   const data = req.body;
   try {
-    const ALLOWED_UPDATES = ["photoUrl", "about", "age",
-      "skills"
-    ];
+    const ALLOWED_UPDATES = ["photoUrl", "about", "age", "skills"];
     const isUpdateAllowed = Object.keys(data).every((k) =>
       ALLOWED_UPDATES.includes(k)
     );
     if (!isUpdateAllowed) {
       throw new Error("Update not allowed");
     }
-    if(data?.skills.length>10)
-    {
+    if (data?.skills.length > 10) {
       throw new Error("Skills can not be greater than 10  ");
     }
     const users = await User.findByIdAndUpdate({ _id: userId }, data, {
