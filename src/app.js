@@ -3,8 +3,61 @@ const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
 const { validateSignUpData } = require("./utils/validation");
+const jwt = require("jsonwebtoken");
+
 app.use(express.json());
+app.use(cookieParser());
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("Email id not present in DB");
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (isPasswordValid) {
+      //create a JWT Token
+      const token = await jwt.sign({ _id: user._id }, "dvsnfdmbsmsdcsd");
+      console.log(token);
+
+      //Add the token  to cookie and send the response back to the user
+      res.cookie("token", token);
+      res.send("Login Successful");
+    } else {
+      throw new Error("Password is not valid");
+    }
+  } catch (err) {
+    res.status(400).send("something went wrong" + err.message);
+  }
+});
+
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    const { token } = cookies;
+    if (!token) {
+      throw new Error("Invalid Token");
+    }
+    const decodedMessage = await jwt.verify(token, "dvsnfdmbsmsdcsd");
+    console.log(decodedMessage);
+    const { _id } = decodedMessage;
+    console.log("logged in used id" + _id);
+
+    const user = await User.findById(_id);
+    if (!user) {
+      throw new Error("User does not exist");
+    }
+
+    console.log(cookies);
+    res.send(user);
+  } catch (err) {
+    res.status(400).send("something went wrong" + err.message);
+  }
+});
 app.post("/signup", async (req, res) => {
   // console.log(req.body);
   // const userObj = {
