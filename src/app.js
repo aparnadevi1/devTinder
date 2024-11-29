@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const { validateSignUpData } = require("./utils/validation");
 const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 
 app.use(express.json());
 app.use(cookieParser());
@@ -18,14 +19,14 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Email id not present in DB");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
     if (isPasswordValid) {
       //create a JWT Token
-      const token = await jwt.sign({ _id: user._id }, "dvsnfdmbsmsdcsd");
-      console.log(token);
+      const token = await user.getJWT();
+     // console.log(token);
 
       //Add the token  to cookie and send the response back to the user
-      res.cookie("token", token);
+      res.cookie("token", token,{expires:new Date(Date.now()+8*3600000)});
       res.send("Login Successful");
     } else {
       throw new Error("Password is not valid");
@@ -35,29 +36,20 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    const { token } = cookies;
-    if (!token) {
-      throw new Error("Invalid Token");
-    }
-    const decodedMessage = await jwt.verify(token, "dvsnfdmbsmsdcsd");
-    console.log(decodedMessage);
-    const { _id } = decodedMessage;
-    console.log("logged in used id" + _id);
-
-    const user = await User.findById(_id);
-    if (!user) {
-      throw new Error("User does not exist");
-    }
-
-    console.log(cookies);
+    const user = req.user;
     res.send(user);
   } catch (err) {
     res.status(400).send("something went wrong" + err.message);
   }
 });
+
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+  const user = req.user;
+  res.send(user.firstName + " is sending connection request");
+});
+
 app.post("/signup", async (req, res) => {
   // console.log(req.body);
   // const userObj = {
@@ -144,7 +136,7 @@ app.patch("/user/:userId", async (req, res) => {
 
 connectDB()
   .then(() => {
-    console.log("Database connection establihed");
+ //   console.log("Database connection establihed");
     app.listen(3000, () => {
       console.log("server is Listening");
     });
