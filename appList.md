@@ -13,10 +13,13 @@
 
 
 ## connectionRequestRouter
--POST /request/send/interested/:userid
+-POST /request/send/interested/:userid   //make status synamic for these two
 -POST /request/send/ignored/:userid
+
+
+
 -POST /request/send/accepted/:requestid
--POST /request/send/rejected/:
+-POST /request/send/rejected/:requestid
 
 ## userRouter
 -GET /user/connections
