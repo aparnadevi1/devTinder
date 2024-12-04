@@ -2,7 +2,7 @@ const express = require("express");
 const { userAuth } = require("../middlewares/auth");
 const userRouter = express.Router();
 const connectionRequest = require("../models/connectionRequest");
-const SAVEDATASTRING = "firstName lastName skills";
+const SAVEDATASTRING = "firstName lastName skills photoUrl age gender about";
 const User = require("../models/user");
 //get all the pending connection requests
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
@@ -22,9 +22,10 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
     if (!connectionRequests) {
       return res.status(400).json({ message: "No Connection Requests found" });
     }
-    res
-      .status(400)
-      .json({ message: "Data fetched successfully", data: connectionRequests });
+    res.json({
+      message: "Data fetched successfully",
+      data: connectionRequests,
+    });
   } catch {
     res.status(400).json({ message: "Something went wrong" });
   }
@@ -56,7 +57,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
     if (!connections) {
       return res.status(400).json({ message: "No Connection found" });
     }
-    res.status(400).json({ message: "Data fetched successfully", data: data });
+    res.json({ message: "Data fetched successfully", data: data });
   } catch {
     res.status(400).json({ message: "Something went wrong" });
   }
@@ -64,9 +65,9 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 userRouter.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
-
+    console.log(req.user);
     const page = parseInt(req.query.page) || 1;
-    let limit = parseInt(req.query.limit) || 10;
+    let limit = parseInt(req.query.limit) || 100;
     limit = limit > 50 ? 50 : limit;
     const skip = (page - 1) * limit;
     const connectionRequests = await connectionRequest

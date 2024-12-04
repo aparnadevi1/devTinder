@@ -13,16 +13,17 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
 });
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
+    const loggedInUser = req.user;
     if (!validateEditProfileData(req)) {
       throw new Error("Invalid Edit Request");
     }
-    const loggedInUser = req.user;
+
     Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
-    console.log("Loggedcsdvsdvedvsdv" + loggedInUser);
-    loggedInUser.save();
-    res.send(`${loggedInUser.firstName} , your profile was update`);
+    // console.log("Loggedcsdvsdvedvsdv" + loggedInUser);
+    await loggedInUser.save();
+    res.send(`${loggedInUser.lastName} , your profile was update`);
   } catch (err) {
-    res.status(400).send("something went wrong" + err.message);
+    res.status(400).send(err.message);
   }
 });
 
