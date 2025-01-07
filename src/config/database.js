@@ -1,12 +1,13 @@
-const mongoose=require('mongoose');
-const connectDB=async()=>{
-    await mongoose.connect("mongodb+srv://chodapuneediaparnadevi:QIcQwlsTIVL316Aw@namastenodejs.xmpl2.mongodb.net/devTinder");
-}
+const mongoose = require("mongoose");
+const connectDB = async () => {
+  await mongoose.connect(
+    "mongodb+srv://chodapuneediaparnadevi:QIcQwlsTIVL316Aw@namastenodejs.xmpl2.mongodb.net/devTinder"
+  );
+};
 
-module.exports=connectDB;
+module.exports = connectDB;
 
-
-
+//go through these comments once
 // const { MongoClient } = require('mongodb');
 
 // const url="mongodb+srv://chodapuneediaparnadevi:QIcQwlsTIVL316Aw@namastenodejs.xmpl2.mongodb.net/";
